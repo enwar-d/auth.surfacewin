@@ -1,1 +1,372 @@
-<p>Coming Soon.</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Authentication — Surface Dev</title>
+<link rel="icon" id="fav" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><circle cx='13' cy='18' r='4.2' fill='%237c6ff7'/><circle cx='20' cy='18' r='5' fill='%237c6ff7'/><circle cx='27' cy='18' r='4.2' fill='%237c6ff7'/><circle cx='20' cy='11' r='3.8' fill='%237c6ff7' opacity='.85'/><circle cx='20' cy='25' r='4.2' fill='%237c6ff7' opacity='.9'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 24px 40px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M48 0H0V48" fill="none" stroke="%23161620" stroke-width="1"/></svg>');
+    background-repeat: repeat;
+  }
+  /* Rekonise-style 2-Column Split Container */
+  .auth-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 900px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 36px;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .auth-card {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 20px;
+    }
+  }
+  .script-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--panel-raised);
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  .task-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #FF0000;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(255, 0, 0, 0.3);
+  }
+  .task-action-btn:hover {
+    background: #e00000;
+    transform: translateY(-1px);
+  }
+  .task-action-btn.completed {
+    background: var(--panel-raised);
+    color: #34d399;
+    border: 1px solid var(--line);
+    box-shadow: none;
+    cursor: default;
+  }
+  .progress-container {
+    margin-bottom: 18px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: #34d399;
+    transition: width 0.3s ease;
+  }
+  .unlock-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+  .unlock-action-btn.unlocked {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    cursor: pointer;
+    opacity: 1;
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+  .unlock-action-btn.unlocked:hover {
+    background: var(--accent-hover);
+  }
+  .auth-timer-box {
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    margin-bottom: 14px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Surface Dev Header Pill -->
+<header class="site-nav">
+  <div class="nav-pill">
+    <a class="logo" href="https://scripts.surface.win">
+      <svg class="icon" viewBox="0 0 40 40" fill="none" style="width:28px;height:28px;color:var(--accent);">
+        <circle cx="20" cy="4" r="2.2" fill="currentColor" opacity=".5"/>
+        <circle cx="13" cy="4" r="1.4" fill="currentColor" opacity=".32"/>
+        <circle cx="27" cy="4" r="1.4" fill="currentColor" opacity=".32"/>
+        <circle cx="7" cy="11" r="1.7" fill="currentColor" opacity=".38"/>
+        <circle cx="13" cy="11" r="3" fill="currentColor" opacity=".7"/>
+        <circle cx="20" cy="11" r="3.8" fill="currentColor" opacity=".86"/>
+        <circle cx="27" cy="11" r="3" fill="currentColor" opacity=".7"/>
+        <circle cx="33" cy="11" r="1.7" fill="currentColor" opacity=".38"/>
+        <circle cx="7" cy="18" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="13" cy="18" r="4.2" fill="currentColor"/>
+        <circle cx="20" cy="18" r="5" fill="currentColor"/>
+        <circle cx="27" cy="18" r="4.2" fill="currentColor"/>
+        <circle cx="33" cy="18" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="7" cy="25" r="2.1" fill="currentColor" opacity=".44"/>
+        <circle cx="13" cy="25" r="3.5" fill="currentColor" opacity=".8"/>
+        <circle cx="20" cy="25" r="4.2" fill="currentColor" opacity=".9"/>
+        <circle cx="27" cy="25" r="3.5" fill="currentColor" opacity=".8"/>
+        <circle cx="33" cy="25" r="2.1" fill="currentColor" opacity=".44"/>
+        <circle cx="13" cy="32" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="20" cy="32" r="3.2" fill="currentColor" opacity=".7"/>
+        <circle cx="27" cy="32" r="2.7" fill="currentColor" opacity=".56"/>
+      </svg>
+      <span>Surface<span class="accent-word wordmark">&nbsp;Auth</span></span>
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      
+      <!-- LEFT COLUMN: Script Info, Thumbnail & Description -->
+      <div>
+        <div id="script-thumb" class="script-thumb"></div>
+        <h1 style="font-family:var(--font-display); font-size: 22px; font-weight: 700; margin: 0 0 10px; letter-spacing: -0.01em;" id="script-title">Loading Script...</h1>
+        <p style="color: var(--muted); font-size: 13.5px; margin: 0; line-height: 1.5;" id="script-desc">Please wait while we fetch script configuration details from the secure database.</p>
+      </div>
+
+      <!-- RIGHT COLUMN: Tasks, Progress & Unlock Action -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+          <span style="font-family:var(--font-mono); font-size: 11.5px; color: var(--muted);" id="step-indicator">Step 1 of 2</span>
+          <span style="font-family:var(--font-mono); font-size: 11.5px; color: #34d399; font-weight: 600;" id="progress-text">0/2 done</span>
+        </div>
+
+        <!-- Dynamic Action Button (Changes based on current step) -->
+        <button id="task-btn" onclick="handleTaskAction()" class="task-action-btn">
+          <svg viewBox="0 0 24 24" fill="#ffffff" style="width:18px;height:18px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          <span id="task-btn-text">Subscribe to channel</span>
+        </button>
+
+        <!-- Unlock Progress Bar -->
+        <div class="progress-container">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
+            <span>Unlock progress</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progress-fill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Hidden 10-Second Timer Box -->
+        <div class="auth-timer-box" id="timer-box">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: block; margin-bottom: 2px;">SECURITY VALIDATION</span>
+          <span id="countdown" style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--accent);">10</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: block; margin-top: 2px;">seconds remaining...</span>
+        </div>
+
+        <!-- Final Unlock Button -->
+        <button id="unlock-btn" disabled onclick="getShortlink()" class="unlock-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="unlock-btn-text">Unlock link</span>
+        </button>
+        
+        <p style="font-size: 11.5px; color: var(--muted); text-align: center; margin-top: 10px;">Complete all steps above first</p>
+        <p id="error-msg" style="color: #f87171; font-family: var(--font-mono); font-size: 12px; text-align: center; margin-top: 12px; display: none;"></p>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://simvzhlzpakjpxdjabgp.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpbXZ6aGx6cGFranB4ZGphYmdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMDU1NTksImV4cCI6MjEwMzU4MTU1OX0.kT56fV8kWdEhC9X4WJkGOGjK5L7mJ0vB0NS-pO45BIY';
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const scriptId = urlParams.get('id');
+
+  let scriptData = null;
+  let currentStep = 1; // 1 = Subscribe, 2 = Comment, 3 = Ready / Timer
+  let timerStarted = false;
+
+  // Fetch script details directly from Supabase on load
+  async function fetchScriptInfo() {
+      if (!scriptId) {
+          document.querySelector('.auth-card').innerHTML = `<p style="color:#f87171; font-family:var(--font-mono); text-align:center;">Error: Missing script ID parameter in URL.</p>`;
+          return;
+      }
+
+      try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/scripts?id=eq.${scriptId}&select=name,description,thumbnail,video_url`, {
+              headers: {
+                  'apikey': SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+              }
+          });
+          const data = await res.json();
+          if (data && data.length > 0) {
+              scriptData = data[0];
+              document.getElementById('script-title').textContent = scriptData.name;
+              document.getElementById('script-desc').textContent = scriptData.description || 'Complete the quick steps to access your secure download link.';
+              
+              if (scriptData.thumbnail) {
+                  document.getElementById('script-thumb').style.backgroundImage = `url('${scriptData.thumbnail}')`;
+              }
+          } else {
+              throw new Error('Script not found.');
+          }
+      } catch (err) {
+          document.getElementById('error-msg').textContent = 'Could not load script configuration.';
+          document.getElementById('error-msg').style.display = 'block';
+      }
+  }
+
+  fetchScriptInfo();
+
+  // Handle Step progression
+  function handleTaskAction() {
+      const btn = document.getElementById('task-btn');
+      const btnText = document.getElementById('task-btn-text');
+      const stepIndicator = document.getElementById('step-indicator');
+      const progressText = document.getElementById('progress-text');
+      const progressFill = document.getElementById('progress-fill');
+
+      if (currentStep === 1) {
+          // Open YouTube Subscription confirmation
+          window.open('https://www.youtube.com/@SurfaceScripts?sub_confirmation=1', '_blank');
+          
+          // Advance to Step 2
+          currentStep = 2;
+          stepIndicator.textContent = 'Step 2 of 2';
+          progressText.textContent = '1/2 done';
+          progressFill.style.width = '50%';
+          btnText.textContent = 'Comment on video';
+      } 
+      else if (currentStep === 2) {
+          // Open specific video for commenting (falls back to channel if none)
+          const targetVideo = (scriptData && scriptData.video_url) ? scriptData.video_url : 'https://www.youtube.com/@SurfaceScripts';
+          window.open(targetVideo, '_blank');
+
+          // Mark tasks finished
+          currentStep = 3;
+          stepIndicator.textContent = 'Completed';
+          progressText.textContent = '2/2 done';
+          progressFill.style.width = '100%';
+          
+          btn.className = 'task-action-btn completed';
+          btnText.textContent = 'All steps completed ✓';
+          btn.disabled = true;
+
+          // Trigger hidden 10-second timer before unlocking final button
+          if (!timerStarted) {
+              startHiddenTimer();
+          }
+      }
+  }
+
+  // 10-Second Hidden Timer Function
+  function startHiddenTimer() {
+      timerStarted = true;
+      const timerBox = document.getElementById('timer-box');
+      const countdownEl = document.getElementById('countdown');
+      timerBox.style.display = 'block';
+
+      let timeLeft = 10;
+      const timerInterval = setInterval(() => {
+          timeLeft--;
+          countdownEl.textContent = timeLeft;
+          if (timeLeft <= 0) {
+              clearInterval(timerInterval);
+              timerBox.style.display = 'none';
+              
+              // Unlock final button
+              const unlockBtn = document.getElementById('unlock-btn');
+              unlockBtn.disabled = false;
+              unlockBtn.className = 'unlock-action-btn unlocked';
+              document.getElementById('unlock-btn-text').textContent = 'Unlock link';
+          }
+      }, 1000);
+  }
+
+  // Fetch Session from Cloudflare Worker & Redirect
+  async function getShortlink() {
+      const unlockBtn = document.getElementById('unlock-btn');
+      const errorMsg = document.getElementById('error-msg');
+      unlockBtn.innerHTML = 'Generating Session...';
+      unlockBtn.disabled = true;
+
+      try {
+          // Replace with your actual deployed Cloudflare Worker URL
+          const workerUrl = 'https://YOUR-WORKER.workers.dev/api/create-session?script_id=' + scriptId;
+          
+          const response = await fetch(workerUrl);
+          const data = await response.json();
+
+          if (!response.ok) {
+              throw new Error(data.error || 'Failed to generate session.');
+          }
+
+          if (data.shortlink) {
+              window.location.href = data.shortlink;
+          } else {
+              throw new Error('Invalid server response.');
+          }
+      } catch (err) {
+          errorMsg.textContent = err.message;
+          errorMsg.style.display = 'block';
+          unlockBtn.innerHTML = 'Unlock link';
+          unlockBtn.disabled = false;
+      }
+  }
+</script>
+</body>
+</html>

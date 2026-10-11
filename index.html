@@ -238,7 +238,7 @@
   let currentStep = 1; // 1 = Subscribe, 2 = Comment, 3 = Ready / Timer
   let timerStarted = false;
 
-  // Fetch script details directly from Supabase on load (including redirect_url)
+  // Fetch public script details from Supabase on load (redirect_url is looked up server-side by the Worker)
   async function fetchScriptInfo() {
       if (!scriptId) {
           document.querySelector('.auth-card').innerHTML = `<p style="color:#f87171; font-family:var(--font-mono); text-align:center;">Error: Missing script ID parameter in URL.</p>`;
@@ -246,7 +246,7 @@
       }
 
       try {
-          const res = await fetch(`${SUPABASE_URL}/rest/v1/scripts?id=eq.${scriptId}&select=name,description,thumbnail,video_url,redirect_url`, {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/scripts?id=eq.${encodeURIComponent(scriptId)}&select=name,description,thumbnail,video_url`, {
               headers: {
                   'apikey': SUPABASE_ANON_KEY,
                   'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -337,20 +337,19 @@
       }, 1000);
   }
 
-  // Fetch Session from Cloudflare Worker (sending redirect_url from Supabase) & Redirect
+  // Ask the Worker for a session + monetized shortlink, then redirect
   async function getShortlink() {
       const unlockBtn = document.getElementById('unlock-btn');
       const errorMsg = document.getElementById('error-msg');
-      unlockBtn.innerHTML = 'Generating Session...';
+      document.getElementById('unlock-btn-text').textContent = 'Generating Session...';
       unlockBtn.disabled = true;
 
       try {
-          if (!scriptData || !scriptData.redirect_url) {
-              throw new Error('Missing redirect URL configuration.');
+          if (!scriptData) {
+              throw new Error('Script not loaded.');
           }
 
-          // Your worker URL integrated here
-          const workerUrl = `https://auth.enwar-d.workers.dev/api/create-session?script_id=${scriptId}&redirect_url=${encodeURIComponent(scriptData.redirect_url)}`;
+          const workerUrl = `https://auth.enwar-d.workers.dev/api/create-session?script_id=${encodeURIComponent(scriptId)}`;
           
           const response = await fetch(workerUrl);
           const data = await response.json();
@@ -367,7 +366,7 @@
       } catch (err) {
           errorMsg.textContent = err.message;
           errorMsg.style.display = 'block';
-          unlockBtn.innerHTML = 'Unlock link';
+          document.getElementById('unlock-btn-text').textContent = 'Unlock link';
           unlockBtn.disabled = false;
       }
   }

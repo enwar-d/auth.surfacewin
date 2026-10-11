@@ -238,7 +238,7 @@
   let currentStep = 1; // 1 = Subscribe, 2 = Comment, 3 = Ready / Timer
   let timerStarted = false;
 
-  // Fetch script details directly from Supabase on load
+  // Fetch script details directly from Supabase on load (including redirect_url)
   async function fetchScriptInfo() {
       if (!scriptId) {
           document.querySelector('.auth-card').innerHTML = `<p style="color:#f87171; font-family:var(--font-mono); text-align:center;">Error: Missing script ID parameter in URL.</p>`;
@@ -246,7 +246,7 @@
       }
 
       try {
-          const res = await fetch(`${SUPABASE_URL}/rest/v1/scripts?id=eq.${scriptId}&select=name,description,thumbnail,video_url`, {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/scripts?id=eq.${scriptId}&select=name,description,thumbnail,video_url,redirect_url`, {
               headers: {
                   'apikey': SUPABASE_ANON_KEY,
                   'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -337,7 +337,7 @@
       }, 1000);
   }
 
-  // Fetch Session from Cloudflare Worker & Redirect
+  // Fetch Session from Cloudflare Worker (sending redirect_url from Supabase) & Redirect
   async function getShortlink() {
       const unlockBtn = document.getElementById('unlock-btn');
       const errorMsg = document.getElementById('error-msg');
@@ -345,8 +345,12 @@
       unlockBtn.disabled = true;
 
       try {
+          if (!scriptData || !scriptData.redirect_url) {
+              throw new Error('Missing redirect URL configuration.');
+          }
+
           // Replace with your actual deployed Cloudflare Worker URL
-          const workerUrl = 'https://YOUR-WORKER.workers.dev/api/create-session?script_id=' + scriptId;
+          const workerUrl = `https://YOUR-WORKER.workers.dev/api/create-session?script_id=${scriptId}&redirect_url=${encodeURIComponent(scriptData.redirect_url)}`;
           
           const response = await fetch(workerUrl);
           const data = await response.json();

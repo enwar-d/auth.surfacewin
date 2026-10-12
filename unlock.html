@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Unlocked — Surface Dev</title>
+<link rel="icon" id="fav" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><circle cx='13' cy='18' r='4.2' fill='%237c6ff7'/><circle cx='20' cy='18' r='5' fill='%237c6ff7'/><circle cx='27' cy='18' r='4.2' fill='%237c6ff7'/><circle cx='20' cy='11' r='3.8' fill='%237c6ff7' opacity='.85'/><circle cx='20' cy='25' r='4.2' fill='%237c6ff7' opacity='.9'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 24px 40px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M48 0H0V48" fill="none" stroke="%23161620" stroke-width="1"/></svg>');
+    background-repeat: repeat;
+  }
+  /* Rekonise-style 2-Column Split Container */
+  .auth-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 900px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 36px;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .auth-card {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 20px;
+    }
+  }
+  .script-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--panel-raised);
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  .task-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #FF0000;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(255, 0, 0, 0.3);
+  }
+  .task-action-btn:hover {
+    background: #e00000;
+    transform: translateY(-1px);
+  }
+  .task-action-btn.completed {
+    background: var(--panel-raised);
+    color: #34d399;
+    border: 1px solid var(--line);
+    box-shadow: none;
+    cursor: default;
+  }
+  .progress-container {
+    margin-bottom: 18px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: #34d399;
+    transition: width 0.3s ease;
+  }
+  .unlock-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+  .unlock-action-btn.unlocked {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    cursor: pointer;
+    opacity: 1;
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+  .unlock-action-btn.unlocked:hover {
+    background: var(--accent-hover);
+  }
+  .auth-timer-box {
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    margin-bottom: 14px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Surface Dev Header Pill -->
+<header class="site-nav">
+  <div class="nav-pill">
+    <a class="logo" href="https://scripts.surface.win">
+      <svg class="icon" viewBox="0 0 40 40" fill="none" style="width:28px;height:28px;color:var(--accent);">
+        <circle cx="20" cy="4" r="2.2" fill="currentColor" opacity=".5"/>
+        <circle cx="13" cy="4" r="1.4" fill="currentColor" opacity=".32"/>
+        <circle cx="27" cy="4" r="1.4" fill="currentColor" opacity=".32"/>
+        <circle cx="7" cy="11" r="1.7" fill="currentColor" opacity=".38"/>
+        <circle cx="13" cy="11" r="3" fill="currentColor" opacity=".7"/>
+        <circle cx="20" cy="11" r="3.8" fill="currentColor" opacity=".86"/>
+        <circle cx="27" cy="11" r="3" fill="currentColor" opacity=".7"/>
+        <circle cx="33" cy="11" r="1.7" fill="currentColor" opacity=".38"/>
+        <circle cx="7" cy="18" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="13" cy="18" r="4.2" fill="currentColor"/>
+        <circle cx="20" cy="18" r="5" fill="currentColor"/>
+        <circle cx="27" cy="18" r="4.2" fill="currentColor"/>
+        <circle cx="33" cy="18" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="7" cy="25" r="2.1" fill="currentColor" opacity=".44"/>
+        <circle cx="13" cy="25" r="3.5" fill="currentColor" opacity=".8"/>
+        <circle cx="20" cy="25" r="4.2" fill="currentColor" opacity=".9"/>
+        <circle cx="27" cy="25" r="3.5" fill="currentColor" opacity=".8"/>
+        <circle cx="33" cy="25" r="2.1" fill="currentColor" opacity=".44"/>
+        <circle cx="13" cy="32" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="20" cy="32" r="3.2" fill="currentColor" opacity=".7"/>
+        <circle cx="27" cy="32" r="2.7" fill="currentColor" opacity=".56"/>
+      </svg>
+      <span>Surface<span class="accent-word wordmark">&nbsp;Auth</span></span>
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="auth-wrap">
+    <div class="auth-card" style="grid-template-columns:1fr; max-width:640px;">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span id="badge" style="font-family:var(--font-mono); font-size:11.5px; color:var(--muted);">Checking session...</span>
+          <span style="font-family:var(--font-mono); font-size:11.5px; color:#34d399; font-weight:600;">2/2 done</span>
+        </div>
+        <h1 id="title" style="font-family:var(--font-display); font-size:22px; font-weight:700; margin:0 0 6px; letter-spacing:-0.01em;">Unlocking...</h1>
+        <p id="hint" style="color:var(--muted); font-size:13px; margin:0 0 14px; line-height:1.5;">Please wait a moment.</p>
+        <textarea id="code" readonly style="display:none; width:100%; height:260px; background:var(--panel-raised); border:1px solid var(--line); border-radius:12px; padding:14px; font-family:var(--font-mono); font-size:12px; color:#34d399; resize:none; outline:none; box-sizing:border-box;"></textarea>
+        <button id="copy-btn" onclick="copyScript()" class="unlock-action-btn unlocked" style="display:none; margin-top:14px;">
+          <span id="copy-text">Copy script</span>
+        </button>
+        <p id="error-msg" style="color:#f87171; font-family:var(--font-mono); font-size:12px; text-align:center; margin-top:12px; display:none;"></p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Your Cloudflare Worker (no trailing slash)
+  const WORKER_URL = 'https://auth.enwar-d.workers.dev';
+
+  const session = new URLSearchParams(window.location.search).get('s');
+  // Remove the token from the address bar right away (also stops it being shared/bookmarked)
+  history.replaceState(null, '', window.location.pathname);
+
+  function fail(msg) {
+    document.getElementById('badge').textContent = 'Not unlocked';
+    document.getElementById('title').textContent = 'Could not unlock';
+    document.getElementById('hint').textContent = 'Go back to the script page and complete the steps again.';
+    const e = document.getElementById('error-msg');
+    e.textContent = msg; e.style.display = 'block';
+  }
+
+  async function claim() {
+    if (!session) return fail('No session found. This page only works once, right after completing the link.');
+    try {
+      const res = await fetch(`${WORKER_URL}/api/claim?session=${encodeURIComponent(session)}`);
+      const data = await res.json();
+      if (!res.ok) return fail(data.error || 'Verification failed.');
+      document.getElementById('badge').textContent = 'Verified & unlocked';
+      document.getElementById('title').textContent = data.name || 'Your script';
+      document.getElementById('hint').textContent = 'Copy your script now. This page only works once, so refreshing will lock it again.';
+      const box = document.getElementById('code');
+      box.value = data.code || '';
+      box.style.display = 'block';
+      document.getElementById('copy-btn').style.display = 'flex';
+    } catch (err) {
+      fail('Network error. Please try again.');
+    }
+  }
+
+  async function copyScript() {
+    const box = document.getElementById('code');
+    try { await navigator.clipboard.writeText(box.value); }
+    catch { box.select(); document.execCommand('copy'); }
+    document.getElementById('copy-text').textContent = 'Copied ✓';
+    setTimeout(() => (document.getElementById('copy-text').textContent = 'Copy script'), 2000);
+  }
+
+  claim();
+</script>
+</body>
+</html>

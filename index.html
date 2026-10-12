@@ -85,6 +85,7 @@
     margin-bottom: 18px;
   }
   .progress-bar-bg {
+    position: relative;
     width: 100%;
     height: 6px;
     background: var(--line);
@@ -93,11 +94,91 @@
     margin-top: 6px;
   }
   .progress-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 0%;
     height: 100%;
     background: #34d399;
+    border-radius: 999px;
     transition: width 0.3s ease;
   }
+  /* Left-right loading sweep, shown while we wait for the visitor to finish on YouTube */
+  .progress-bar-sweep {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 34%;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .progress-bar-bg.loading .progress-bar-sweep {
+    opacity: 1;
+    animation: sweepLR 1s ease-in-out infinite alternate;
+  }
+  @keyframes sweepLR {
+    from { transform: translateX(0); }
+    to   { transform: translateX(194%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-bar-bg.loading .progress-bar-sweep { animation: none; width: 100%; opacity: 0.45; }
+  }
+  .step-list { display: flex; gap: 6px; margin-bottom: 14px; }
+  .step-pill {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 7px 4px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--panel-raised);
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .step-pill.active { color: var(--text); border-color: var(--accent); }
+  .step-pill.done { color: #34d399; border-color: rgba(52, 211, 153, 0.4); }
+  .task-action-btn.pending {
+    background: var(--panel-raised);
+    color: var(--text);
+    border: 1px solid var(--line);
+    box-shadow: none;
+  }
+  .task-action-btn.pending:hover { background: var(--panel-raised); transform: none; }
+  .task-hint {
+    min-height: 34px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--muted);
+    text-align: center;
+    margin: -4px 0 12px;
+  }
+  .script-thumb { position: relative; overflow: hidden; }
+  .video-embed { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .watch-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px 14px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .watch-btn.show { display: flex; }
+  .watch-btn:hover { background: var(--panel-raised); border-color: var(--accent); }
   .unlock-action-btn {
     width: 100%;
     display: flex;
@@ -136,6 +217,7 @@
     margin-bottom: 14px;
     display: none;
   }
+  @media (max-width: 760px){ body{ padding-bottom: 0; } }
 </style>
 </head>
 <body>
@@ -171,6 +253,36 @@
     </a>
   </div>
 </header>
+<!-- Mobile header (styles.css hides .site-nav at <=760px and shows this instead) -->
+<div id="mob-top-header">
+  <a class="mh-pill" href="https://scripts.surface.win">
+    <svg class="mh-icon" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="4" r="2.2" fill="currentColor" opacity=".5"/>
+        <circle cx="13" cy="4" r="1.4" fill="currentColor" opacity=".32"/>
+        <circle cx="27" cy="4" r="1.4" fill="currentColor" opacity=".32"/>
+        <circle cx="7" cy="11" r="1.7" fill="currentColor" opacity=".38"/>
+        <circle cx="13" cy="11" r="3" fill="currentColor" opacity=".7"/>
+        <circle cx="20" cy="11" r="3.8" fill="currentColor" opacity=".86"/>
+        <circle cx="27" cy="11" r="3" fill="currentColor" opacity=".7"/>
+        <circle cx="33" cy="11" r="1.7" fill="currentColor" opacity=".38"/>
+        <circle cx="7" cy="18" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="13" cy="18" r="4.2" fill="currentColor"/>
+        <circle cx="20" cy="18" r="5" fill="currentColor"/>
+        <circle cx="27" cy="18" r="4.2" fill="currentColor"/>
+        <circle cx="33" cy="18" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="7" cy="25" r="2.1" fill="currentColor" opacity=".44"/>
+        <circle cx="13" cy="25" r="3.5" fill="currentColor" opacity=".8"/>
+        <circle cx="20" cy="25" r="4.2" fill="currentColor" opacity=".9"/>
+        <circle cx="27" cy="25" r="3.5" fill="currentColor" opacity=".8"/>
+        <circle cx="33" cy="25" r="2.1" fill="currentColor" opacity=".44"/>
+        <circle cx="13" cy="32" r="2.7" fill="currentColor" opacity=".56"/>
+        <circle cx="20" cy="32" r="3.2" fill="currentColor" opacity=".7"/>
+        <circle cx="27" cy="32" r="2.7" fill="currentColor" opacity=".56"/>
+      </svg>
+    <span class="mh-txt">Surface<span class="accent-word">&nbsp;Auth</span></span>
+  </a>
+</div>
+
 
 <main>
   <div class="auth-wrap">
@@ -181,13 +293,23 @@
         <div id="script-thumb" class="script-thumb"></div>
         <h1 style="font-family:var(--font-display); font-size: 22px; font-weight: 700; margin: 0 0 10px; letter-spacing: -0.01em;" id="script-title">Loading Script...</h1>
         <p style="color: var(--muted); font-size: 13.5px; margin: 0; line-height: 1.5;" id="script-desc">Please wait while we fetch script configuration details from the secure database.</p>
+        <button id="watch-btn" class="watch-btn" onclick="toggleVideo()" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M8 5v14l11-7z"/></svg>
+          <span id="watch-btn-text">Watch the video</span>
+        </button>
       </div>
 
       <!-- RIGHT COLUMN: Tasks, Progress & Unlock Action -->
       <div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-          <span style="font-family:var(--font-mono); font-size: 11.5px; color: var(--muted);" id="step-indicator">Step 1 of 2</span>
-          <span style="font-family:var(--font-mono); font-size: 11.5px; color: #34d399; font-weight: 600;" id="progress-text">0/2 done</span>
+          <span style="font-family:var(--font-mono); font-size: 11.5px; color: var(--muted);" id="step-indicator">Step 1 of 3</span>
+          <span style="font-family:var(--font-mono); font-size: 11.5px; color: #34d399; font-weight: 600;" id="progress-text">0/3 done</span>
+        </div>
+
+        <div class="step-list" id="step-list">
+          <div class="step-pill active">Step 1</div>
+          <div class="step-pill">Step 2</div>
+          <div class="step-pill">Step 3</div>
         </div>
 
         <!-- Dynamic Action Button (Changes based on current step) -->
@@ -195,14 +317,16 @@
           <svg viewBox="0 0 24 24" fill="#ffffff" style="width:18px;height:18px;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
           <span id="task-btn-text">Subscribe to channel</span>
         </button>
+        <p class="task-hint" id="task-hint"></p>
 
         <!-- Unlock Progress Bar -->
         <div class="progress-container">
           <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
             <span>Unlock progress</span>
           </div>
-          <div class="progress-bar-bg">
+          <div class="progress-bar-bg" id="progress-bar">
             <div id="progress-fill" class="progress-bar-fill"></div>
+            <div class="progress-bar-sweep"></div>
           </div>
         </div>
 
@@ -235,7 +359,6 @@
   const scriptId = urlParams.get('id');
 
   let scriptData = null;
-  let currentStep = 1; // 1 = Subscribe, 2 = Comment, 3 = Ready / Timer
   let timerStarted = false;
 
   // Fetch public script details from Supabase on load (secret columns are hidden from the anon key)
@@ -255,11 +378,15 @@
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
               scriptData = data[0];
+              setupVideo();
               document.getElementById('script-title').textContent = scriptData.name;
               document.getElementById('script-desc').textContent = scriptData.description || 'Complete the quick steps to access your secure download link.';
               
-              if (scriptData.thumbnail) {
-                  document.getElementById('script-thumb').style.backgroundImage = `url('${scriptData.thumbnail}')`;
+              // Only accept https image URLs, and let the browser normalise the URL before it goes into CSS
+              if (typeof scriptData.thumbnail === 'string' && scriptData.thumbnail.startsWith('https://')) {
+                  try {
+                      document.getElementById('script-thumb').style.backgroundImage = `url("${new URL(scriptData.thumbnail).href}")`;
+                  } catch (e) {}
               }
           } else {
               throw new Error('Script not found.');
@@ -272,44 +399,197 @@
 
   fetchScriptInfo();
 
-  // Handle Step progression
+  // ---------- Steps: Subscribe -> Like -> Comment ----------
+  // Each step opens YouTube. The step completes once the visitor has been away from this
+  // tab/window for AWAY_MS. (This is a "dwell" check: we cannot see what they do on YouTube.)
+  const AWAY_MS = 5000;
+  const CHANNEL_URL = 'https://www.youtube.com/@SurfaceScripts';
+  const $ = (id) => document.getElementById(id);
+
+  function videoUrl() {
+      const v = scriptData && scriptData.video_url;
+      return (typeof v === 'string' && v.startsWith('https://')) ? v : CHANNEL_URL;
+  }
+
+  const STEPS = [
+      { label: 'Subscribe to channel', done: 'Subscribed ✓', url: () => CHANNEL_URL + '?sub_confirmation=1' },
+      { label: 'Like the video',       done: 'Liked ✓',      url: videoUrl },
+      { label: 'Comment on the video', done: 'Commented ✓',  url: videoUrl },
+  ];
+
+  let stepIndex = 0;        // step currently shown
+  let completedCount = 0;   // finished steps
+  let phase = 'idle';       // idle | waiting | done | finished
+  let awaySince = null;     // when the visitor left this tab
+  let awayTick = null;      // interval driving the little countdown
+  let windowBlurred = false;
+
+  function setHint(text) { $('task-hint').textContent = text; }
+  function setLoading(on) { $('progress-bar').classList.toggle('loading', on); }
+  function stopAwayTick() { if (awayTick) { clearInterval(awayTick); awayTick = null; } }
+
+  function renderProgress() {
+      $('progress-text').textContent = `${completedCount}/${STEPS.length} done`;
+      $('progress-fill').style.width = (completedCount / STEPS.length * 100) + '%';
+      $('step-indicator').textContent = completedCount >= STEPS.length
+          ? 'Completed' : `Step ${completedCount + 1} of ${STEPS.length}`;
+      document.querySelectorAll('.step-pill').forEach((el, i) => {
+          el.classList.toggle('done', i < completedCount);
+          el.classList.toggle('active', i === completedCount);
+      });
+  }
+
+  function showStep(i) {
+      stepIndex = i;
+      phase = 'idle';
+      awaySince = null;
+      stopAwayTick();
+      setLoading(false);
+      const btn = $('task-btn');
+      btn.className = 'task-action-btn';
+      btn.disabled = false;
+      $('task-btn-text').textContent = STEPS[i].label;
+      setHint('Press the button to open YouTube, and complete task.');
+      renderProgress();
+  }
+
+  // Button handler (also used to re-open YouTube if the visitor came back too early)
   function handleTaskAction() {
-      const btn = document.getElementById('task-btn');
-      const btnText = document.getElementById('task-btn-text');
-      const stepIndicator = document.getElementById('step-indicator');
-      const progressText = document.getElementById('progress-text');
-      const progressFill = document.getElementById('progress-fill');
+      if (phase !== 'idle' && phase !== 'waiting') return;
+      phase = 'waiting';           // set BEFORE opening, so the tab-hidden event is not missed
+      awaySince = null;
+      stopAwayTick();
 
-      if (currentStep === 1) {
-          // Open YouTube Subscription confirmation
-          window.open('https://www.youtube.com/@SurfaceScripts?sub_confirmation=1', '_blank');
-          
-          // Advance to Step 2
-          currentStep = 2;
-          stepIndicator.textContent = 'Step 2 of 2';
-          progressText.textContent = '1/2 done';
-          progressFill.style.width = '50%';
-          btnText.textContent = 'Comment on video';
-      } 
-      else if (currentStep === 2) {
-          // Open specific video for commenting (falls back to channel if none)
-          const targetVideo = (scriptData && scriptData.video_url) ? scriptData.video_url : 'https://www.youtube.com/@SurfaceScripts';
-          window.open(targetVideo, '_blank');
+      const w = window.open(STEPS[stepIndex].url(), '_blank');
+      if (!w) {
+          phase = 'idle';
+          setLoading(false);
+          $('task-btn').className = 'task-action-btn';
+          $('task-btn-text').textContent = STEPS[stepIndex].label;
+          setHint('Your browser blocked the new tab. Allow pop-ups for this site and press the button again.');
+          return;
+      }
+      try { w.opener = null; } catch (e) {}
 
-          // Mark tasks finished
-          currentStep = 3;
-          stepIndicator.textContent = 'Completed';
-          progressText.textContent = '2/2 done';
-          progressFill.style.width = '100%';
-          
-          btn.className = 'task-action-btn completed';
-          btnText.textContent = 'All steps completed ✓';
-          btn.disabled = true;
+      $('task-btn').className = 'task-action-btn pending';
+      $('task-btn-text').textContent = 'Waiting for YouTube… (tap to reopen)';
+      setLoading(true);
+      setHint('Do it on YouTube and stay there for 5 seconds, then come back.');
+      setTimeout(syncAway, 400);   // catch the case where the tab was already hidden
+  }
 
-          // Trigger hidden 10-second timer before unlocking final button
-          if (!timerStarted) {
-              startHiddenTimer();
+  function isAway() { return document.visibilityState === 'hidden' || windowBlurred; }
+
+  function syncAway() {
+      if (phase !== 'waiting') return;
+      const away = isAway();
+      if (away && awaySince === null) {
+          awaySince = Date.now();
+          stopAwayTick();
+          awayTick = setInterval(tickAway, 250);
+          tickAway();
+      } else if (!away && awaySince !== null) {
+          // Back on this page: check the real elapsed time (timers may have been frozen while away)
+          const elapsed = Date.now() - awaySince;
+          awaySince = null;
+          stopAwayTick();
+          if (elapsed >= AWAY_MS) {
+              completeStep();
+          } else {
+              setHint(`Stay on YouTube, then come back. (Tap the button to reopen it)`);
           }
+      }
+  }
+
+  function tickAway() {
+      if (phase !== 'waiting' || awaySince === null) return;
+      const left = Math.ceil((AWAY_MS - (Date.now() - awaySince)) / 1000);
+      if (left <= 0) { completeStep(); return; }
+      setHint(`Stay on YouTube… ${left}s`);
+  }
+
+  function completeStep() {
+      if (phase !== 'waiting') return;
+      phase = 'done';
+      awaySince = null;
+      stopAwayTick();
+      setLoading(false);
+      completedCount++;
+
+      const btn = $('task-btn');
+      btn.className = 'task-action-btn completed';
+      btn.disabled = true;
+      $('task-btn-text').textContent = STEPS[stepIndex].done;
+      setHint('');
+      renderProgress();
+
+      if (completedCount < STEPS.length) {
+          setTimeout(() => showStep(completedCount), 900);
+      } else {
+          phase = 'finished';
+          $('task-btn-text').textContent = 'All steps completed ✓';
+          if (!timerStarted) startHiddenTimer();   // existing 10 s security timer, then Unlock
+      }
+  }
+
+  document.addEventListener('visibilitychange', syncAway);
+  window.addEventListener('blur', () => {
+      // Clicking into the embedded video also blurs the window; that is not "leaving".
+      setTimeout(() => {
+          if (document.activeElement && document.activeElement.tagName === 'IFRAME') return;
+          windowBlurred = true;
+          syncAway();
+      }, 0);
+  });
+  window.addEventListener('focus', () => { windowBlurred = false; syncAway(); });
+  window.addEventListener('pageshow', () => { windowBlurred = false; syncAway(); });
+
+  // ---------- Optional: watch the video embedded on this page ----------
+  let videoId = null;
+  let watching = false;
+
+  function ytId(u) {
+      try {
+          const x = new URL(u);
+          const h = x.hostname.replace(/^(www|m)\./, '');
+          let id = null;
+          if (h === 'youtu.be') {
+              id = x.pathname.slice(1).split('/')[0];
+          } else if (h === 'youtube.com' || h === 'music.youtube.com') {
+              if (x.pathname === '/watch') id = x.searchParams.get('v');
+              else {
+                  const m = x.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?]+)/);
+                  if (m) id = m[1];
+              }
+          }
+          return (id && /^[A-Za-z0-9_-]{11}$/.test(id)) ? id : null;
+      } catch (e) { return null; }
+  }
+
+  function setupVideo() {
+      videoId = ytId(scriptData && scriptData.video_url);
+      if (videoId) $('watch-btn').classList.add('show');
+  }
+
+  function toggleVideo() {
+      if (!videoId) return;
+      const thumb = $('script-thumb');
+      if (!watching) {
+          const f = document.createElement('iframe');
+          f.className = 'video-embed';
+          f.title = 'Video player';
+          f.src = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+          f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+          f.allowFullscreen = true;
+          f.referrerPolicy = 'strict-origin-when-cross-origin';
+          thumb.appendChild(f);
+          watching = true;
+          $('watch-btn-text').textContent = 'Hide video';
+      } else {
+          const f = thumb.querySelector('iframe');
+          if (f) f.remove();
+          watching = false;
+          $('watch-btn-text').textContent = 'Watch the video';
       }
   }
 
@@ -337,7 +617,7 @@
       }, 1000);
   }
 
-  // Ask the Cloudflare Worker for a session + Linkvertise link, then redirect
+  // Ask the Cloudflare Worker for a session + Work.ink link, then redirect
   async function getShortlink() {
       const unlockBtn = document.getElementById('unlock-btn');
       const errorMsg = document.getElementById('error-msg');
@@ -373,6 +653,7 @@
           unlockBtn.disabled = false;
       }
   }
+  showStep(0);
 </script>
 </body>
 </html>

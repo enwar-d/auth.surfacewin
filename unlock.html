@@ -256,7 +256,7 @@
     document.getElementById('badge').textContent = 'Checking session...';
     document.getElementById('title').textContent = 'Unlocking...';
     document.getElementById('hint').textContent = 'Please wait a moment.';
-    if (!wiToken) return fail('No token found. This page only works once, right after completing the link.');
+    if (!wiToken) return fail('No token found, or has been bypassed. This page only works once, right after completing the link.');
     if (!session) return fail('No session found. Open the script page and finish the link in the same browser.');
     try {
       const res = await fetch(`${WORKER_URL}/api/claim?session=${encodeURIComponent(session)}&token=${encodeURIComponent(wiToken)}`);
@@ -266,9 +266,9 @@
       // Anything else is final: the session is single-use, so forget it
       try { localStorage.removeItem('surface_session'); } catch (e) {}
       if (!res.ok) return fail(data.error || 'Verification failed.');
-      document.getElementById('badge').textContent = 'Verified & unlocked';
+      document.getElementById('badge').textContent = 'Script unlocked';
       document.getElementById('title').textContent = data.name || 'Your script';
-      document.getElementById('hint').textContent = 'Copy your script now. This page only works once, so refreshing will lock it again.';
+      document.getElementById('hint').textContent = 'Copy your script now! This page only works once, so refreshing will lock it again.';
       const box = document.getElementById('code');
       box.value = data.code || '';
       box.style.display = 'block';

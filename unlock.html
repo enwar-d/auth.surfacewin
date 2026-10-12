@@ -196,7 +196,10 @@
   // Your Cloudflare Worker (no trailing slash)
   const WORKER_URL = 'https://auth.enwar-d.workers.dev';
 
-  const session = new URLSearchParams(window.location.search).get('s');
+  // Work.ink sends the user here as  unlock.html?token=...   (the session id was saved by auth.html)
+  const wiToken = new URLSearchParams(window.location.search).get('token');
+  let session = null;
+  try { session = localStorage.getItem('surface_session'); } catch (e) {}
   // Remove the token from the address bar right away (also stops it being shared/bookmarked)
   history.replaceState(null, '', window.location.pathname);
 
@@ -209,10 +212,13 @@
   }
 
   async function claim() {
-    if (!session) return fail('No session found. This page only works once, right after completing the link.');
+    if (!wiToken) return fail('No token found. This page only works once, right after completing the link.');
+    if (!session) return fail('No session found. Open the script page and finish the link in the same browser.');
     try {
-      const res = await fetch(`${WORKER_URL}/api/claim?session=${encodeURIComponent(session)}`);
-      const data = await res.json();
+      const res = await fetch(`${WORKER_URL}/api/claim?session=${encodeURIComponent(session)}&token=${encodeURIComponent(wiToken)}`);
+      const data = await res.json().catch(() => ({}));
+      // The session is single-use whatever the outcome, so forget it
+      try { localStorage.removeItem('surface_session'); } catch (e) {}
       if (!res.ok) return fail(data.error || 'Verification failed.');
       document.getElementById('badge').textContent = 'Verified & unlocked';
       document.getElementById('title').textContent = data.name || 'Your script';

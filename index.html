@@ -238,7 +238,7 @@
   let currentStep = 1; // 1 = Subscribe, 2 = Comment, 3 = Ready / Timer
   let timerStarted = false;
 
-  // Fetch public script details from Supabase on load (redirect_url is looked up server-side by the Worker)
+  // Fetch public script details from Supabase on load (secret columns are hidden from the anon key)
   async function fetchScriptInfo() {
       if (!scriptId) {
           document.querySelector('.auth-card').innerHTML = `<p style="color:#f87171; font-family:var(--font-mono); text-align:center;">Error: Missing script ID parameter in URL.</p>`;
@@ -253,7 +253,7 @@
               }
           });
           const data = await res.json();
-          if (data && data.length > 0) {
+          if (Array.isArray(data) && data.length > 0) {
               scriptData = data[0];
               document.getElementById('script-title').textContent = scriptData.name;
               document.getElementById('script-desc').textContent = scriptData.description || 'Complete the quick steps to access your secure download link.';
@@ -337,7 +337,7 @@
       }, 1000);
   }
 
-  // Ask the Worker for a session + monetized shortlink, then redirect
+  // Ask the Cloudflare Worker for a session + Linkvertise link, then redirect
   async function getShortlink() {
       const unlockBtn = document.getElementById('unlock-btn');
       const errorMsg = document.getElementById('error-msg');
@@ -346,9 +346,10 @@
 
       try {
           if (!scriptData) {
-              throw new Error('Script not loaded.');
+              throw new Error('Script not loaded yet. Please refresh the page.');
           }
 
+          // The Worker looks up the link itself (nothing sensitive is sent from the browser)
           const workerUrl = `https://auth.enwar-d.workers.dev/api/create-session?script_id=${encodeURIComponent(scriptId)}`;
           
           const response = await fetch(workerUrl);
@@ -358,7 +359,9 @@
               throw new Error(data.error || 'Failed to generate session.');
           }
 
-          if (data.shortlink) {
+          if (data.shortlink && data.session) {
+              // Remember the session so unlock.html can finish the job after Work.ink
+              try { localStorage.setItem('surface_session', data.session); } catch (e) {}
               window.location.href = data.shortlink;
           } else {
               throw new Error('Invalid server response.');
